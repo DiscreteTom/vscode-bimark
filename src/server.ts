@@ -41,6 +41,16 @@ init().then(({ bm, scan }) => {
               `id = '${def.id}'\n` +
               "```",
           },
+          range: {
+            start: {
+              line: def.fragment.position.start.line - 1,
+              character: def.fragment.position.start.column - 1,
+            },
+            end: {
+              line: def.fragment.position.end.line - 1,
+              character: def.fragment.position.end.column - 1,
+            },
+          },
         };
       }
     }
