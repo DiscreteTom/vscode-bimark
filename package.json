@@ -17,7 +17,17 @@
     "onLanguage:markdown"
   ],
   "main": "./out/extension.js",
-  "contributes": {},
+  "contributes": {
+    "grammars": [
+      {
+        "path": "./syntaxes/bimark.tmLanguage.json",
+        "scopeName": "text.definition.bimark",
+        "injectTo": [
+          "text.html.markdown"
+        ]
+      }
+    ]
+  },
   "scripts": {
     "vscode:prepublish": "yarn run compile",
     "compile": "tsc -p ./",

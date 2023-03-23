@@ -1,0 +1,17 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "scopeName": "text.definition.bimark",
+  "injectionSelector": "L:text.html.markdown -markup.inline.raw.string.markdown -meta.link.inline.markdown -markup.fenced_code.block.markdown",
+  "name": "",
+  "patterns": [
+    {
+      "include": "#bimark-definition"
+    }
+  ],
+  "repository": {
+    "bimark-definition": {
+      "name": "entity.name.type.class.bimark",
+      "match": "\\[\\[([ a-zA-Z0-9_-]+)((\\|[ a-zA-Z0-9_-]+)*)(:[a-zA-Z0-9_-]+)?\\]\\]"
+    }
+  }
+}
