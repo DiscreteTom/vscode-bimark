@@ -48,7 +48,7 @@ init().then(({ bm, scan }) => {
             },
             end: {
               line: def.fragment.position.end.line - 1,
-              character: def.fragment.position.end.column - 1,
+              character: def.fragment.position.end.column,
             },
           },
         };
