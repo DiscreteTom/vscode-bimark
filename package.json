@@ -42,6 +42,7 @@
   "dependencies": {
     "bimark": "^0.1.3",
     "vscode-languageclient": "^8.1.0",
-    "vscode-languageserver": "^8.1.0"
+    "vscode-languageserver": "^8.1.0",
+    "vscode-languageserver-textdocument": "^1.0.8"
   }
 }
