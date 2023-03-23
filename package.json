@@ -1,7 +1,11 @@
 {
   "name": "vscode-bimark",
   "displayName": "vscode-bimark",
-  "description": "",
+  "description": "The vscode extension for bimark.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DiscreteTom/vscode-bimark"
+  },
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.76.0"
@@ -9,16 +13,11 @@
   "categories": [
     "Other"
   ],
-  "activationEvents": [],
+  "activationEvents": [
+    "onLanguage:markdown"
+  ],
   "main": "./out/extension.js",
-  "contributes": {
-    "commands": [
-      {
-        "command": "vscode-bimark.helloWorld",
-        "title": "Hello World"
-      }
-    ]
-  },
+  "contributes": {},
   "scripts": {
     "vscode:prepublish": "yarn run compile",
     "compile": "tsc -p ./",
@@ -28,16 +27,21 @@
     "test": "node ./out/test/runTest.js"
   },
   "devDependencies": {
-    "@types/vscode": "^1.76.0",
     "@types/glob": "^8.1.0",
     "@types/mocha": "^10.0.1",
     "@types/node": "16.x",
+    "@types/vscode": "^1.76.0",
     "@typescript-eslint/eslint-plugin": "^5.53.0",
     "@typescript-eslint/parser": "^5.53.0",
+    "@vscode/test-electron": "^2.2.3",
     "eslint": "^8.34.0",
     "glob": "^8.1.0",
     "mocha": "^10.2.0",
-    "typescript": "^4.9.5",
-    "@vscode/test-electron": "^2.2.3"
+    "typescript": "^4.9.5"
+  },
+  "dependencies": {
+    "bimark": "^0.1.3",
+    "vscode-languageclient": "^8.1.0",
+    "vscode-languageserver": "^8.1.0"
   }
 }
