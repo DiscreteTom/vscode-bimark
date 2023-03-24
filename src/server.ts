@@ -39,6 +39,7 @@ init().then(({ bm, scan }) => {
               `name = '${def.name}'\n` +
               `alias = [${def.alias.map((a) => `'${a}'`).join(", ")}]\n` +
               `id = '${def.id}'\n` +
+              `path = '${def.path}'\n` +
               "```",
           },
           range: {
