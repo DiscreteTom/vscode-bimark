@@ -6,6 +6,7 @@ import {
   TextDocumentSyncKind,
   CompletionItem,
   CompletionItemKind,
+  InsertTextFormat,
 } from "vscode-languageserver/node";
 import { TextDocument } from "vscode-languageserver-textdocument";
 import { init } from "./bimark";
@@ -91,6 +92,8 @@ init().then(({ bm, scan }) => {
         labelDetails: {
           description: "implicit reference",
         },
+        sortText: `${name}-0`,
+        filterText: name,
       });
       result.push({
         label: `[[#${name}]]`,
@@ -100,6 +103,8 @@ init().then(({ bm, scan }) => {
         labelDetails: {
           description: "explicit reference",
         },
+        sortText: `${name}-1`,
+        filterText: name,
       });
       result.push({
         label: `[[!${name}]]`,
@@ -109,6 +114,8 @@ init().then(({ bm, scan }) => {
         labelDetails: {
           description: "escaped reference",
         },
+        sortText: `${name}-2`,
+        filterText: name,
       });
     }
 
