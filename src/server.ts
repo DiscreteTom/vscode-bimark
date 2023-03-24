@@ -97,7 +97,7 @@ init().then(({ bm, scan }) => {
       });
       result.push({
         label: `[[#${name}]]`,
-        kind: CompletionItemKind.Class,
+        kind: CompletionItemKind.Reference,
         data: def.id,
         documentation,
         labelDetails: {
@@ -108,7 +108,7 @@ init().then(({ bm, scan }) => {
       });
       result.push({
         label: `[[!${name}]]`,
-        kind: CompletionItemKind.Class,
+        kind: CompletionItemKind.Reference,
         data: def.id,
         documentation,
         labelDetails: {
