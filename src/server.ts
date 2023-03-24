@@ -71,31 +71,45 @@ init().then(({ bm, scan }) => {
     const result: CompletionItem[] = [];
 
     for (const name of bm.name2def.keys()) {
-      // check if the tail of prefix is a prefix of name
-      for (let i = 0; i < name.length; i++) {
-        if (prefix.endsWith(name.slice(0, i))) {
-          const def = bm.name2def.get(name)!;
-          result.push({
-            label: name,
-            kind: CompletionItemKind.Class,
-            data: def.id,
-            documentation: {
-              kind: "markdown",
-              value:
-                "```ts\n" +
-                `// BiMark Definition\n` +
-                `name = '${def.name}'\n` +
-                `alias = [${def.alias.map((a) => `'${a}'`).join(", ")}]\n` +
-                `id = '${def.id}'\n` +
-                `path = '${def.path}'\n` +
-                "```",
-            },
-            labelDetails: {
-              description: "implicit reference",
-            },
-          });
-        }
-      }
+      const def = bm.name2def.get(name)!;
+      const documentation = {
+        kind: "markdown" as const,
+        value:
+          "```ts\n" +
+          `// BiMark Definition\n` +
+          `name = '${def.name}'\n` +
+          `alias = [${def.alias.map((a) => `'${a}'`).join(", ")}]\n` +
+          `id = '${def.id}'\n` +
+          `path = '${def.path}'\n` +
+          "```",
+      };
+      result.push({
+        label: name,
+        kind: CompletionItemKind.Class,
+        data: def.id,
+        documentation,
+        labelDetails: {
+          description: "implicit reference",
+        },
+      });
+      result.push({
+        label: `[[#${name}]]`,
+        kind: CompletionItemKind.Class,
+        data: def.id,
+        documentation,
+        labelDetails: {
+          description: "explicit reference",
+        },
+      });
+      result.push({
+        label: `[[!${name}]]`,
+        kind: CompletionItemKind.Class,
+        data: def.id,
+        documentation,
+        labelDetails: {
+          description: "escaped reference",
+        },
+      });
     }
 
     return result;
