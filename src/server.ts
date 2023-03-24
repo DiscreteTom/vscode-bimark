@@ -20,6 +20,7 @@ init().then(({ bm, scan }) => {
         hoverProvider: true,
         completionProvider: {
           resolveProvider: false,
+          triggerCharacters: ["[", " ", "!", "#"],
         },
       },
     };
