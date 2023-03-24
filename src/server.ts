@@ -96,7 +96,7 @@ init().then(({ bm, scan }) => {
         filterText: name,
       });
       result.push({
-        label: `[[#${name}]]`,
+        label: `[[#${def.id}]]`,
         kind: CompletionItemKind.Reference,
         data: def.id,
         documentation,
