@@ -95,17 +95,21 @@ init().then(({ bm, scan }) => {
         sortText: `${name}-0`,
         filterText: name,
       });
-      result.push({
-        label: `[[#${def.id}]]`,
-        kind: CompletionItemKind.Reference,
-        data: def.id,
-        documentation,
-        labelDetails: {
-          description: "explicit reference",
-        },
-        sortText: `${name}-1`,
-        filterText: name,
-      });
+      if (name == def.name) {
+        // this is not an alias
+        // this is to prevent duplicate explicit reference
+        result.push({
+          label: `[[#${def.id}]]`,
+          kind: CompletionItemKind.Reference,
+          data: def.id,
+          documentation,
+          labelDetails: {
+            description: "explicit reference",
+          },
+          sortText: `${name}-1`,
+          filterText: name,
+        });
+      }
       result.push({
         label: `[[!${name}]]`,
         kind: CompletionItemKind.Reference,
