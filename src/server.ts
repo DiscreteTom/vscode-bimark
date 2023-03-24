@@ -4,6 +4,8 @@ import {
   ProposedFeatures,
   InitializeParams,
   TextDocumentSyncKind,
+  CompletionItem,
+  CompletionItemKind,
 } from "vscode-languageserver/node";
 import { TextDocument } from "vscode-languageserver-textdocument";
 import { init } from "./bimark";
@@ -15,6 +17,9 @@ init().then(({ bm, scan }) => {
       capabilities: {
         textDocumentSync: TextDocumentSyncKind.Incremental,
         hoverProvider: true,
+        completionProvider: {
+          resolveProvider: false,
+        },
       },
     };
   });
@@ -55,6 +60,45 @@ init().then(({ bm, scan }) => {
         };
       }
     }
+  });
+  connection.onCompletion((params) => {
+    // get prefix in current line
+    const prefix = documents.get(params.textDocument.uri)!.getText({
+      start: { line: params.position.line, character: 0 },
+      end: { line: params.position.line, character: params.position.character },
+    });
+
+    const result: CompletionItem[] = [];
+
+    for (const name of bm.name2def.keys()) {
+      // check if the tail of prefix is a prefix of name
+      for (let i = 0; i < name.length; i++) {
+        if (prefix.endsWith(name.slice(0, i))) {
+          const def = bm.name2def.get(name)!;
+          result.push({
+            label: name,
+            kind: CompletionItemKind.Class,
+            data: def.id,
+            documentation: {
+              kind: "markdown",
+              value:
+                "```ts\n" +
+                `// BiMark Definition\n` +
+                `name = '${def.name}'\n` +
+                `alias = [${def.alias.map((a) => `'${a}'`).join(", ")}]\n` +
+                `id = '${def.id}'\n` +
+                `path = '${def.path}'\n` +
+                "```",
+            },
+            labelDetails: {
+              description: "implicit reference",
+            },
+          });
+        }
+      }
+    }
+
+    return result;
   });
 
   const documents: TextDocuments<TextDocument> = new TextDocuments(
