@@ -88,7 +88,6 @@ init().then(({ bm, scan }) => {
       result.push({
         label: name,
         kind: CompletionItemKind.Class,
-        data: def.id,
         documentation,
         labelDetails: {
           description: "implicit reference",
@@ -102,7 +101,6 @@ init().then(({ bm, scan }) => {
         result.push({
           label: `[[#${def.id}]]`,
           kind: CompletionItemKind.Reference,
-          data: def.id,
           documentation,
           labelDetails: {
             description: "explicit reference",
@@ -114,7 +112,6 @@ init().then(({ bm, scan }) => {
       result.push({
         label: `[[!${name}]]`,
         kind: CompletionItemKind.Reference,
-        data: def.id,
         documentation,
         labelDetails: {
           description: "escaped reference",
