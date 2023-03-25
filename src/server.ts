@@ -6,7 +6,6 @@ import {
   TextDocumentSyncKind,
   CompletionItem,
   CompletionItemKind,
-  InsertTextFormat,
 } from "vscode-languageserver/node";
 import { TextDocument } from "vscode-languageserver-textdocument";
 import { init } from "./bimark";
@@ -29,8 +28,8 @@ init().then(({ bm, scan }) => {
     scan(params.textDocument.uri, params.textDocument.text);
   });
   connection.onHover((params) => {
-    // check if this is a def
     for (const def of bm.id2def.values()) {
+      // check if this is a def
       if (
         def.path == params.textDocument.uri &&
         def.fragment.position.start.line - 1 == params.position.line &&
@@ -60,6 +59,39 @@ init().then(({ bm, scan }) => {
             },
           },
         };
+      }
+      // check if this is a ref
+      for (const ref of def.refs) {
+        if (
+          ref.path == params.textDocument.uri &&
+          ref.fragment.position.start.line - 1 == params.position.line &&
+          ref.fragment.position.start.column - 1 < params.position.character &&
+          ref.fragment.position.end.column - 1 > params.position.character
+        ) {
+          return {
+            contents: {
+              kind: "markdown",
+              value:
+                "```ts\n" +
+                `// BiMark ${ref.type} reference\n` +
+                `name = '${def.name}'\n` +
+                `alias = [${def.alias.map((a) => `'${a}'`).join(", ")}]\n` +
+                `id = '${def.id}'\n` +
+                `path = '${def.path}'\n` +
+                "```",
+            },
+            range: {
+              start: {
+                line: ref.fragment.position.start.line - 1,
+                character: ref.fragment.position.start.column - 1,
+              },
+              end: {
+                line: ref.fragment.position.end.line - 1,
+                character: ref.fragment.position.end.column,
+              },
+            },
+          };
+        }
       }
     }
   });

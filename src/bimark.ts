@@ -22,7 +22,7 @@ export async function init() {
       );
 
       // re-collect refs
-      // TODO
+      bm.render(uri, document);
     },
   };
 }
