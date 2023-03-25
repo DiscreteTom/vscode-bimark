@@ -89,8 +89,12 @@ init().then(({ bm, scan }) => {
         label: name,
         kind: CompletionItemKind.Class,
         documentation,
+        detail: "implicit reference",
         labelDetails: {
-          description: "implicit reference",
+          description:
+            name == def.name
+              ? undefined // this is not an alias
+              : def.name, // this is an alias, show the original name
         },
         sortText: `${name}-0`,
         filterText: name,
@@ -102,8 +106,9 @@ init().then(({ bm, scan }) => {
           label: `[[#${def.id}]]`,
           kind: CompletionItemKind.Reference,
           documentation,
+          detail: "explicit reference",
           labelDetails: {
-            description: "explicit reference",
+            description: def.name,
           },
           sortText: `${name}-1`,
           filterText: name,
@@ -111,10 +116,11 @@ init().then(({ bm, scan }) => {
       }
       result.push({
         label: `[[!${name}]]`,
-        kind: CompletionItemKind.Reference,
+        kind: CompletionItemKind.Constant,
         documentation,
+        detail: "escaped reference",
         labelDetails: {
-          description: "escaped reference",
+          description: def.name,
         },
         sortText: `${name}-2`,
         filterText: name,
