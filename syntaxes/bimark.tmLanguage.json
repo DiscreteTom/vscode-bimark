@@ -6,12 +6,19 @@
   "patterns": [
     {
       "include": "#bimark-definition"
+    },
+    {
+      "include": "#bimark-explicit-escaped-reference"
     }
   ],
   "repository": {
     "bimark-definition": {
       "name": "entity.name.type.class.bimark",
-      "match": "\\[\\[([ a-zA-Z0-9_-]+)((\\|[ a-zA-Z0-9_-]+)*)(:[a-zA-Z0-9_-]+)?\\]\\]"
+      "match": "\\[\\[([^$&+,/:;=?!@\"'<>#%{}|\\\\^~\\[\\]`\\n\\r]+)((\\|[^$&+,/:;=?!@\"'<>#%{}|\\\\^~\\[\\]`\\n\\r]+)*)(:[^$&+,/:;=?!@ \"'<>#%{}|\\\\^~\\[\\]`\\n\\r]+)?\\]\\]"
+    },
+    "bimark-explicit-escaped-reference": {
+      "name": "storage.type.bimark",
+      "match": "\\[\\[((#[^$&+,/:;=?!@ \"'<>#%{}|\\\\^~\\[\\]`\\n\\r]+)|(![^$&+,/:;=?!@\"'<>#%{}|\\\\^~\\[\\]`\\n\\r]+))\\]\\]"
     }
   }
 }
