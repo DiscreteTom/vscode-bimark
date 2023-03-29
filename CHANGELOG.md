@@ -1,9 +1,7 @@
-# Change Log
-
-All notable changes to the "vscode-bimark" extension will be documented in this file.
-
-Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
+# CHANGELOG
 
 ## [Unreleased]
 
-- Initial release
+- Syntax highlighting for definitions and references.
+- Hover over a definition/reference to see definition details.
+- Completion for references.
