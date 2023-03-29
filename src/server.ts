@@ -6,9 +6,13 @@ import {
   TextDocumentSyncKind,
   CompletionItem,
   CompletionItemKind,
+  SemanticTokens,
 } from "vscode-languageserver/node";
 import { TextDocument } from "vscode-languageserver-textdocument";
 import { init } from "./bimark";
+// https://github.com/microsoft/TypeScript/issues/49721#issuecomment-1319854183
+// @ts-expect-error
+import type { Reference } from "bimark";
 
 init().then(({ bm, scan }) => {
   const connection = createConnection(ProposedFeatures.all);
@@ -20,6 +24,15 @@ init().then(({ bm, scan }) => {
         completionProvider: {
           resolveProvider: false,
           triggerCharacters: ["[", " ", "!", "#"],
+        },
+        semanticTokensProvider: {
+          legend: {
+            tokenTypes: ["type"],
+            tokenModifiers: ["defaultLibrary"],
+          },
+          full: {
+            delta: false,
+          },
         },
       },
     };
@@ -158,6 +171,49 @@ init().then(({ bm, scan }) => {
         filterText: name,
       });
     }
+
+    return result;
+  });
+  connection.languages.semanticTokens.on((params) => {
+    const refs: Reference[] = [];
+    // collect refs
+    bm.id2def.forEach((def) => {
+      def.refs
+        .filter((ref) => ref.path == params.textDocument.uri)
+        .forEach((ref) => refs.push(ref));
+    });
+    // sort by line and column, since we need to encode the data as delta position
+    refs.sort((a, b) => {
+      if (a.fragment.position.start.line == b.fragment.position.start.line) {
+        return (
+          a.fragment.position.start.column - b.fragment.position.start.column
+        );
+      }
+      return a.fragment.position.start.line - b.fragment.position.start.line;
+    });
+    // init result with unencoded data
+    const result: SemanticTokens = { data: [] };
+    refs.forEach((ref) => {
+      result.data.push(
+        ref.fragment.position.start.line - 1, // line
+        ref.fragment.position.start.column - 1, // start character
+        ref.fragment.position.end.column -
+          ref.fragment.position.start.column +
+          1, // length
+        0, // token type, array index of capabilities.semanticTokens.legend.tokenTypes
+        1 // token modifiers, bitmap of capabilities.semanticTokens.legend.tokenModifiers
+      );
+    });
+    // according to the spec, the data should be encoded as the delta to the previous data
+    // so we have to process it from the end
+    for (let i = result.data.length - 5; i >= 5; i -= 5) {
+      // delta line
+      result.data[i] = result.data[i] - result.data[i - 5];
+      if (result.data[i] == 0)
+        // delta start character, only if the line is the same
+        result.data[i + 1] = result.data[i + 1] - result.data[i - 4];
+    }
+    // console.log(result.data);
 
     return result;
   });
