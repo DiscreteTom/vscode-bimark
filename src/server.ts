@@ -10,11 +10,8 @@ import {
 } from "vscode-languageserver/node";
 import { TextDocument } from "vscode-languageserver-textdocument";
 import { init } from "./bimark";
-// https://github.com/microsoft/TypeScript/issues/49721#issuecomment-1319854183
-// @ts-expect-error
-import type { Reference } from "bimark";
 
-init().then(({ bm, scan }) => {
+init().then(({ bm, scan, infoMap }) => {
   const connection = createConnection(ProposedFeatures.all);
   connection.onInitialize((params: InitializeParams) => {
     return {
@@ -41,10 +38,12 @@ init().then(({ bm, scan }) => {
     scan(params.textDocument.uri, params.textDocument.text);
   });
   connection.onHover((params) => {
-    for (const def of bm.id2def.values()) {
-      // check if this is a def
+    const doc = infoMap.get(params.textDocument.uri);
+    if (!doc) return;
+
+    // check if the hover text is a def
+    for (const def of doc.defs) {
       if (
-        def.path == params.textDocument.uri &&
         def.fragment.position.start.line - 1 == params.position.line &&
         def.fragment.position.start.column - 1 < params.position.character &&
         def.fragment.position.end.column - 1 > params.position.character
@@ -73,38 +72,64 @@ init().then(({ bm, scan }) => {
           },
         };
       }
-      // check if this is a ref
-      for (const ref of def.refs) {
-        if (
-          ref.path == params.textDocument.uri &&
-          ref.fragment.position.start.line - 1 == params.position.line &&
-          ref.fragment.position.start.column - 1 < params.position.character &&
-          ref.fragment.position.end.column - 1 > params.position.character
-        ) {
-          return {
-            contents: {
-              kind: "markdown",
-              value:
-                "```ts\n" +
-                `// BiMark ${ref.type} reference\n` +
-                `name = '${def.name}'\n` +
-                `alias = [${def.alias.map((a) => `'${a}'`).join(", ")}]\n` +
-                `id = '${def.id}'\n` +
-                `path = '${def.path}'\n` +
-                "```",
+    }
+
+    // check if the hover text is a ref
+    for (const ref of doc.refs) {
+      if (
+        ref.fragment.position.start.line - 1 == params.position.line &&
+        ref.fragment.position.start.column - 1 < params.position.character &&
+        ref.fragment.position.end.column - 1 > params.position.character
+      ) {
+        return {
+          contents: {
+            kind: "markdown",
+            value:
+              "```ts\n" +
+              `// BiMark ${ref.type} reference\n` +
+              `name = '${ref.def.name}'\n` +
+              `alias = [${ref.def.alias.map((a) => `'${a}'`).join(", ")}]\n` +
+              `id = '${ref.def.id}'\n` +
+              `path = '${ref.def.path}'\n` +
+              "```",
+          },
+          range: {
+            start: {
+              line: ref.fragment.position.start.line - 1,
+              character: ref.fragment.position.start.column - 1,
             },
-            range: {
-              start: {
-                line: ref.fragment.position.start.line - 1,
-                character: ref.fragment.position.start.column - 1,
-              },
-              end: {
-                line: ref.fragment.position.end.line - 1,
-                character: ref.fragment.position.end.column,
-              },
+            end: {
+              line: ref.fragment.position.end.line - 1,
+              character: ref.fragment.position.end.column,
             },
-          };
-        }
+          },
+        };
+      }
+    }
+
+    // check if the hover text is an escaped ref
+    for (const ref of doc.escaped) {
+      if (
+        ref.fragment.position.start.line - 1 == params.position.line &&
+        ref.fragment.position.start.column - 1 < params.position.character &&
+        ref.fragment.position.end.column - 1 > params.position.character
+      ) {
+        return {
+          contents: {
+            kind: "markdown",
+            value: `BiMark ${ref.type} reference`,
+          },
+          range: {
+            start: {
+              line: ref.fragment.position.start.line - 1,
+              character: ref.fragment.position.start.column - 1,
+            },
+            end: {
+              line: ref.fragment.position.end.line - 1,
+              character: ref.fragment.position.end.column,
+            },
+          },
+        };
       }
     }
   });
@@ -175,15 +200,11 @@ init().then(({ bm, scan }) => {
     return result;
   });
   connection.languages.semanticTokens.on((params) => {
-    const refs: Reference[] = [];
-    // collect refs
-    bm.id2def.forEach((def) => {
-      def.refs
-        .filter((ref) => ref.path == params.textDocument.uri)
-        .forEach((ref) => refs.push(ref));
-    });
+    const doc = infoMap.get(params.textDocument.uri)!;
+    if (!doc) return { data: [] };
+
     // sort by line and column, since we need to encode the data as delta position
-    refs.sort((a, b) => {
+    const refs = [...doc.refs, ...doc.escaped].sort((a, b) => {
       if (a.fragment.position.start.line == b.fragment.position.start.line) {
         return (
           a.fragment.position.start.column - b.fragment.position.start.column
@@ -191,6 +212,7 @@ init().then(({ bm, scan }) => {
       }
       return a.fragment.position.start.line - b.fragment.position.start.line;
     });
+
     // init result with unencoded data
     const result: SemanticTokens = { data: [] };
     refs.forEach((ref) => {
