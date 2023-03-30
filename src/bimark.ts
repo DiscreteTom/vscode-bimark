@@ -34,8 +34,8 @@ export async function init() {
       // debug output
       console.log(
         `BiMark: collect defs from ${uri}: ${doc.defs
-          .map((d) => d.name)
-          .join(",")}`
+          .map((d) => `'${d.name}'`)
+          .join(", ")}`
       );
 
       // re-collect refs
