@@ -13,6 +13,7 @@ import { init } from "./bimark";
 import * as fs from "fs";
 import * as url from "url";
 import { config } from "./config";
+import { registerHover } from "./hover";
 
 init().then(({ bm, scan, infoMap }) => {
   const connection = createConnection(ProposedFeatures.all);
@@ -39,102 +40,9 @@ init().then(({ bm, scan, infoMap }) => {
       },
     };
   });
-  connection.onHover((params) => {
-    const doc = infoMap.get(params.textDocument.uri);
-    if (!doc) return;
 
-    // check if the hover text is a def
-    for (const def of doc.defs) {
-      if (
-        def.fragment.position.start.line - 1 == params.position.line &&
-        def.fragment.position.start.column - 1 < params.position.character &&
-        def.fragment.position.end.column - 1 > params.position.character
-      ) {
-        return {
-          contents: {
-            kind: "markdown",
-            value:
-              "```ts\n" +
-              `// BiMark Definition\n` +
-              `name = '${def.name}'\n` +
-              `alias = [${def.alias.map((a) => `'${a}'`).join(", ")}]\n` +
-              `id = '${def.id}'\n` +
-              `path = '${def.path}'\n` +
-              "```",
-          },
-          range: {
-            start: {
-              line: def.fragment.position.start.line - 1,
-              character: def.fragment.position.start.column - 1,
-            },
-            end: {
-              line: def.fragment.position.end.line - 1,
-              character: def.fragment.position.end.column,
-            },
-          },
-        };
-      }
-    }
+  registerHover(connection, infoMap);
 
-    // check if the hover text is a ref
-    for (const ref of doc.refs) {
-      if (
-        ref.fragment.position.start.line - 1 == params.position.line &&
-        ref.fragment.position.start.column - 1 < params.position.character &&
-        ref.fragment.position.end.column - 1 > params.position.character
-      ) {
-        return {
-          contents: {
-            kind: "markdown",
-            value:
-              "```ts\n" +
-              `// BiMark ${ref.type} reference\n` +
-              `name = '${ref.def.name}'\n` +
-              `alias = [${ref.def.alias.map((a) => `'${a}'`).join(", ")}]\n` +
-              `id = '${ref.def.id}'\n` +
-              `path = '${ref.def.path}'\n` +
-              "```",
-          },
-          range: {
-            start: {
-              line: ref.fragment.position.start.line - 1,
-              character: ref.fragment.position.start.column - 1,
-            },
-            end: {
-              line: ref.fragment.position.end.line - 1,
-              character: ref.fragment.position.end.column,
-            },
-          },
-        };
-      }
-    }
-
-    // check if the hover text is an escaped ref
-    for (const ref of doc.escaped) {
-      if (
-        ref.fragment.position.start.line - 1 == params.position.line &&
-        ref.fragment.position.start.column - 1 < params.position.character &&
-        ref.fragment.position.end.column - 1 > params.position.character
-      ) {
-        return {
-          contents: {
-            kind: "markdown",
-            value: `BiMark ${ref.type} reference`,
-          },
-          range: {
-            start: {
-              line: ref.fragment.position.start.line - 1,
-              character: ref.fragment.position.start.column - 1,
-            },
-            end: {
-              line: ref.fragment.position.end.line - 1,
-              character: ref.fragment.position.end.column,
-            },
-          },
-        };
-      }
-    }
-  });
   connection.onCompletion((params) => {
     // get prefix in current line
     const prefix = documents.get(params.textDocument.uri)!.getText({
