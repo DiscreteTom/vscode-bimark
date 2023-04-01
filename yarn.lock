@@ -329,10 +329,10 @@ bcp-47-match@^2.0.0:
   resolved "https://registry.npmmirror.com/bcp-47-match/-/bcp-47-match-2.0.3.tgz#603226f6e5d3914a581408be33b28a53144b09d0"
   integrity sha512-JtTezzbAibu8G0R9op9zb3vcWZd9JF6M0xOYGPn0fNCd7wOpRB1mU2mH9T8gaBGbAAyIIVgB2G7xG0GP98zMAQ==
 
-bimark@^0.3.1:
-  version "0.3.1"
-  resolved "https://registry.npmmirror.com/bimark/-/bimark-0.3.1.tgz#7c511d3f88c6eee7a5ac2953df5c7f8594e7d6b4"
-  integrity sha512-GyJZ1Ud6Q25Nujxlt8UnWZKQOEQ2Ez+80vS5n3kzcLNnqh2fPbkHunty0s2Ucc75GN88W/groBEely345Q8STA==
+bimark@^0.3.2:
+  version "0.3.2"
+  resolved "https://registry.npmmirror.com/bimark/-/bimark-0.3.2.tgz#491374e570560deef310450e7f4286f769f37465"
+  integrity sha512-peTDA8OcXWsTBfBMhQd38RrY4rJ4iJOi8hFn+c5BkTBq56FVpeFsUdkXgcZ2g8nfEiLJdofVGa8oEtdjkUfAXg==
   dependencies:
     hast-util-select "^5.0.5"
     rehype "^12.0.1"
