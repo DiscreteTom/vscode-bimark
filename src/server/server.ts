@@ -13,6 +13,7 @@ import * as url from "url";
 import { config } from "./config";
 import { registerHover } from "./hover";
 import { registerCompletion } from "./completion";
+import { registerDefinition } from "./definition";
 
 init().then(({ bm, scan, infoMap }) => {
   const connection = createConnection(ProposedFeatures.all);
@@ -46,6 +47,7 @@ init().then(({ bm, scan, infoMap }) => {
 
   registerHover(connection, infoMap);
   registerCompletion(connection, documents, bm);
+  registerDefinition(connection, infoMap);
 
   connection.languages.semanticTokens.on((params) => {
     const doc = infoMap.get(params.textDocument.uri)!;
@@ -86,33 +88,6 @@ init().then(({ bm, scan, infoMap }) => {
     // console.log(result.data);
 
     return result;
-  });
-  connection.onDefinition((params) => {
-    const doc = infoMap.get(params.textDocument.uri)!;
-    if (!doc) return;
-
-    // ensure the position is in the range of a ref
-    for (const ref of doc.refs) {
-      if (
-        ref.fragment.position.start.line - 1 == params.position.line &&
-        ref.fragment.position.start.column - 1 < params.position.character &&
-        ref.fragment.position.end.column - 1 > params.position.character
-      ) {
-        return {
-          uri: ref.def.path,
-          range: {
-            start: {
-              line: ref.def.fragment.position.start.line - 1,
-              character: ref.def.fragment.position.start.column - 1,
-            },
-            end: {
-              line: ref.def.fragment.position.end.line - 1,
-              character: ref.def.fragment.position.end.column,
-            },
-          },
-        };
-      }
-    }
   });
   connection.onReferences((params) => {
     const doc = infoMap.get(params.textDocument.uri)!;
