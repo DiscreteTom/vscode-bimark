@@ -14,6 +14,7 @@ import { config } from "./config";
 import { registerHover } from "./hover";
 import { registerCompletion } from "./completion";
 import { registerDefinition } from "./definition";
+import { registerReference } from "./reference";
 
 init().then(({ bm, scan, infoMap }) => {
   const connection = createConnection(ProposedFeatures.all);
@@ -48,6 +49,7 @@ init().then(({ bm, scan, infoMap }) => {
   registerHover(connection, infoMap);
   registerCompletion(connection, documents, bm);
   registerDefinition(connection, infoMap);
+  registerReference(connection, infoMap);
 
   connection.languages.semanticTokens.on((params) => {
     const doc = infoMap.get(params.textDocument.uri)!;
@@ -88,35 +90,6 @@ init().then(({ bm, scan, infoMap }) => {
     // console.log(result.data);
 
     return result;
-  });
-  connection.onReferences((params) => {
-    const doc = infoMap.get(params.textDocument.uri)!;
-    if (!doc) return;
-
-    // ensure the position is in the range of a def
-    for (const def of doc.defs) {
-      if (
-        def.fragment.position.start.line - 1 == params.position.line &&
-        def.fragment.position.start.column - 1 < params.position.character &&
-        def.fragment.position.end.column - 1 > params.position.character
-      ) {
-        return def.refs.map((ref) => {
-          return {
-            uri: ref.path,
-            range: {
-              start: {
-                line: ref.fragment.position.start.line - 1,
-                character: ref.fragment.position.start.column - 1,
-              },
-              end: {
-                line: ref.fragment.position.end.line - 1,
-                character: ref.fragment.position.end.column,
-              },
-            },
-          };
-        });
-      }
-    }
   });
   connection.onRequest(
     "bimark/init",
