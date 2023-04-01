@@ -10,7 +10,7 @@ import {
 
 let client: LanguageClient;
 
-export function activate(context: ExtensionContext) {
+export async function activate(context: ExtensionContext) {
   const serverModule = context.asAbsolutePath(path.join("out", "server.js"));
 
   const serverOptions: ServerOptions = {
@@ -36,7 +36,13 @@ export function activate(context: ExtensionContext) {
   );
 
   // this will also launch the server
-  client.start();
+  await client.start();
+
+  // send initial file list
+  const files = await workspace.findFiles("**/*.md");
+  await client.sendRequest("bimark/init", {
+    files: files.map((uri) => uri.toString()),
+  });
 }
 
 export function deactivate(): Thenable<void> | undefined {

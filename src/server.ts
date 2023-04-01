@@ -10,6 +10,8 @@ import {
 } from "vscode-languageserver/node";
 import { TextDocument } from "vscode-languageserver-textdocument";
 import { init } from "./bimark";
+import * as fs from "fs";
+import * as url from "url";
 
 init().then(({ bm, scan, infoMap }) => {
   const connection = createConnection(ProposedFeatures.all);
@@ -297,12 +299,31 @@ init().then(({ bm, scan, infoMap }) => {
       }
     }
   });
+  connection.onRequest("bimark/init", (params: { files: string[] }) => {
+    console.log(`init ${params.files.length} files`);
+    params.files.forEach((uri) => {
+      const filePath = url.fileURLToPath(uri);
+      fs.readFile(filePath, "utf8", (err, data) => {
+        if (err) {
+          console.error(`Error reading file ${filePath}: ${err}`);
+        } else {
+          scan(uri, data);
+        }
+      });
+    });
+    console.log(`init done`);
+  });
 
   const documents: TextDocuments<TextDocument> = new TextDocuments(
     TextDocument
   );
   documents.listen(connection);
+  documents.onDidOpen((event) => {
+    console.log(`open ${event.document.uri}`);
+    scan(event.document.uri, event.document.getText());
+  });
   documents.onDidChangeContent((change) => {
+    console.log(`change ${change.document.uri}`);
     scan(change.document.uri, change.document.getText());
   });
 
