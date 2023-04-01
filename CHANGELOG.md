@@ -7,3 +7,4 @@
 - Completion for references.
 - Goto definition.
 - Find all references.
+- Diagnostics for undefined references and duplicated definitions.

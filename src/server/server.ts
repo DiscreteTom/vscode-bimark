@@ -15,8 +15,9 @@ import { registerCompletion } from "./completion";
 import { registerDefinition } from "./definition";
 import { registerReference } from "./reference";
 import { registerSemanticToken } from "./semanticToken";
+import { scanWithDiagnostics } from "./diagnostics";
 
-init().then(({ bm, scan, infoMap }) => {
+init().then(({ bm, scan, infoMap, BiDocError, BiParserError }) => {
   const connection = createConnection(ProposedFeatures.all);
   const documents: TextDocuments<TextDocument> = new TextDocuments(
     TextDocument
@@ -64,7 +65,15 @@ init().then(({ bm, scan, infoMap }) => {
               if (err) {
                 console.error(`Error reading file ${filePath}: ${err}`);
               } else {
-                scan(uri, data);
+                scanWithDiagnostics(
+                  connection,
+                  scan,
+                  uri,
+                  data,
+                  bm,
+                  BiDocError,
+                  BiParserError
+                );
               }
               resolve();
             });
@@ -80,11 +89,27 @@ init().then(({ bm, scan, infoMap }) => {
   documents.listen(connection);
   documents.onDidOpen((event) => {
     console.log(`open ${event.document.uri}`);
-    scan(event.document.uri, event.document.getText());
+    scanWithDiagnostics(
+      connection,
+      scan,
+      event.document.uri,
+      event.document.getText(),
+      bm,
+      BiDocError,
+      BiParserError
+    );
   });
   documents.onDidChangeContent((change) => {
     console.log(`change ${change.document.uri}`);
-    scan(change.document.uri, change.document.getText());
+    scanWithDiagnostics(
+      connection,
+      scan,
+      change.document.uri,
+      change.document.getText(),
+      bm,
+      BiDocError,
+      BiParserError
+    );
   });
   connection.listen();
 });

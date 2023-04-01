@@ -9,7 +9,7 @@ export type DocInfo = {
 };
 
 export async function init() {
-  const { BiMark } = await import("bimark"); // esm import
+  const { BiMark, BiDocError, BiParserError } = await import("bimark"); // esm import
   const bm = new BiMark();
 
   /**
@@ -20,6 +20,8 @@ export async function init() {
   return {
     bm,
     infoMap: infoMap as ReadonlyMap<string, DocInfo>,
+    BiDocError,
+    BiParserError,
     scan: (uri: string, document: string) => {
       bm.purge(uri); // remove old data
 

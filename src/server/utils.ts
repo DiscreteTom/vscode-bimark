@@ -1,6 +1,6 @@
 // https://github.com/microsoft/TypeScript/issues/49721#issuecomment-1319854183
 // @ts-expect-error
-import { Definition, Fragment } from "bimark";
+import { Definition, Fragment, Position as BMPosition } from "bimark";
 import { Position } from "vscode-languageserver/node";
 import { config } from "./config";
 
@@ -30,15 +30,19 @@ export function def2info(def: Definition) {
   );
 }
 
-export function fragment2range(fragment: Fragment) {
+export function position2range(position: BMPosition) {
   return {
     start: {
-      line: fragment.position.start.line - 1,
-      character: fragment.position.start.column - 1,
+      line: position.start.line - 1,
+      character: position.start.column - 1,
     },
     end: {
-      line: fragment.position.end.line - 1,
-      character: fragment.position.end.column,
+      line: position.end.line - 1,
+      character: position.end.column,
     },
   };
+}
+
+export function fragment2range(fragment: Fragment) {
+  return position2range(fragment.position);
 }
