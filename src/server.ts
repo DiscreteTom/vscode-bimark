@@ -13,6 +13,10 @@ import { init } from "./bimark";
 import * as fs from "fs";
 import * as url from "url";
 
+const config = {
+  workspaceFolders: [] as string[],
+};
+
 init().then(({ bm, scan, infoMap }) => {
   const connection = createConnection(ProposedFeatures.all);
   connection.onInitialize((params: InitializeParams) => {
@@ -299,20 +303,30 @@ init().then(({ bm, scan, infoMap }) => {
       }
     }
   });
-  connection.onRequest("bimark/init", (params: { files: string[] }) => {
-    console.log(`init ${params.files.length} files`);
-    params.files.forEach((uri) => {
-      const filePath = url.fileURLToPath(uri);
-      fs.readFile(filePath, "utf8", (err, data) => {
-        if (err) {
-          console.error(`Error reading file ${filePath}: ${err}`);
-        } else {
-          scan(uri, data);
-        }
-      });
-    });
-    console.log(`init done`);
-  });
+  connection.onRequest(
+    "bimark/init",
+    async (params: { files: string[]; folders: string[] }) => {
+      console.log(`init ${params.files.length} files`);
+      await Promise.all(
+        params.files.map((uri) => {
+          new Promise<void>((resolve) => {
+            const filePath = url.fileURLToPath(uri);
+            fs.readFile(filePath, "utf8", (err, data) => {
+              if (err) {
+                console.error(`Error reading file ${filePath}: ${err}`);
+              } else {
+                scan(uri, data);
+              }
+              resolve();
+            });
+          });
+        })
+      );
+      config.workspaceFolders = params.folders;
+      console.log(`init folders: ${config.workspaceFolders.join(", ")}`);
+      console.log(`init done`);
+    }
+  );
 
   const documents: TextDocuments<TextDocument> = new TextDocuments(
     TextDocument

@@ -38,10 +38,11 @@ export async function activate(context: ExtensionContext) {
   // this will also launch the server
   await client.start();
 
-  // send initial file list
+  // send initial file list & workspace folders
   const files = await workspace.findFiles("**/*.md");
   await client.sendRequest("bimark/init", {
     files: files.map((uri) => uri.toString()),
+    folders: workspace.workspaceFolders?.map((f) => f.uri.toString()) ?? [],
   });
 }
 
