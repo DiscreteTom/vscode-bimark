@@ -12,10 +12,7 @@ import { TextDocument } from "vscode-languageserver-textdocument";
 import { init } from "./bimark";
 import * as fs from "fs";
 import * as url from "url";
-
-const config = {
-  workspaceFolders: [] as string[],
-};
+import { config } from "./config";
 
 init().then(({ bm, scan, infoMap }) => {
   const connection = createConnection(ProposedFeatures.all);
