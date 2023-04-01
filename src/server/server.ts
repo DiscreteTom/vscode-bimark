@@ -4,8 +4,6 @@ import {
   ProposedFeatures,
   InitializeParams,
   TextDocumentSyncKind,
-  CompletionItem,
-  CompletionItemKind,
   SemanticTokens,
 } from "vscode-languageserver/node";
 import { TextDocument } from "vscode-languageserver-textdocument";
@@ -14,9 +12,14 @@ import * as fs from "fs";
 import * as url from "url";
 import { config } from "./config";
 import { registerHover } from "./hover";
+import { registerCompletion } from "./completion";
 
 init().then(({ bm, scan, infoMap }) => {
   const connection = createConnection(ProposedFeatures.all);
+  const documents: TextDocuments<TextDocument> = new TextDocuments(
+    TextDocument
+  );
+
   connection.onInitialize((params: InitializeParams) => {
     return {
       capabilities: {
@@ -42,73 +45,8 @@ init().then(({ bm, scan, infoMap }) => {
   });
 
   registerHover(connection, infoMap);
+  registerCompletion(connection, documents, bm);
 
-  connection.onCompletion((params) => {
-    // get prefix in current line
-    const prefix = documents.get(params.textDocument.uri)!.getText({
-      start: { line: params.position.line, character: 0 },
-      end: { line: params.position.line, character: params.position.character },
-    });
-
-    const result: CompletionItem[] = [];
-
-    for (const name of bm.name2def.keys()) {
-      const def = bm.name2def.get(name)!;
-      const documentation = {
-        kind: "markdown" as const,
-        value:
-          "```ts\n" +
-          `// BiMark Definition\n` +
-          `name = '${def.name}'\n` +
-          `alias = [${def.alias.map((a) => `'${a}'`).join(", ")}]\n` +
-          `id = '${def.id}'\n` +
-          `path = '${def.path}'\n` +
-          "```",
-      };
-      result.push({
-        label: name,
-        kind: CompletionItemKind.Class,
-        documentation,
-        detail: "implicit reference",
-        labelDetails: {
-          description:
-            name == def.name
-              ? undefined // this is not an alias
-              : def.name, // this is an alias, show the original name
-        },
-        sortText: `${name}-0`,
-        filterText: name,
-      });
-      if (name == def.name) {
-        // this is not an alias
-        // this is to prevent duplicate explicit reference
-        result.push({
-          label: `[[#${def.id}]]`,
-          kind: CompletionItemKind.Reference,
-          documentation,
-          detail: "explicit reference",
-          labelDetails: {
-            description: def.name,
-          },
-          sortText: `${name}-1`,
-          filterText: name,
-        });
-      }
-      result.push({
-        label: `[[!${name}]]`,
-        kind: CompletionItemKind.Constant,
-        documentation,
-        detail: "escaped reference",
-        labelDetails: {
-          description: def.name,
-        },
-        sortText: `${name}-2`,
-        filterText: name,
-      });
-    }
-
-    return result;
-  });
   connection.languages.semanticTokens.on((params) => {
     const doc = infoMap.get(params.textDocument.uri)!;
     if (!doc) return { data: [] };
@@ -230,9 +168,6 @@ init().then(({ bm, scan, infoMap }) => {
     }
   );
 
-  const documents: TextDocuments<TextDocument> = new TextDocuments(
-    TextDocument
-  );
   documents.listen(connection);
   documents.onDidOpen((event) => {
     console.log(`open ${event.document.uri}`);
@@ -242,6 +177,5 @@ init().then(({ bm, scan, infoMap }) => {
     console.log(`change ${change.document.uri}`);
     scan(change.document.uri, change.document.getText());
   });
-
   connection.listen();
 });
