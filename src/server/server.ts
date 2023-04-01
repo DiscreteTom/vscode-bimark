@@ -4,7 +4,6 @@ import {
   ProposedFeatures,
   InitializeParams,
   TextDocumentSyncKind,
-  SemanticTokens,
 } from "vscode-languageserver/node";
 import { TextDocument } from "vscode-languageserver-textdocument";
 import { init } from "./bimark";
