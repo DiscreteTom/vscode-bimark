@@ -33,7 +33,7 @@ export async function init() {
 
       // debug output
       console.log(
-        `BiMark: collect defs from ${uri}: ${doc.defs
+        `collect defs from ${uri}: ${doc.defs
           .map((d) => `'${d.name}'`)
           .join(", ")}`
       );
@@ -44,10 +44,8 @@ export async function init() {
       doc.escaped = res.escaped.map((r) => r.ref);
 
       // debug output
-      console.log(`BiMark: collect ${doc.refs.length} refs from ${uri}}`);
-      console.log(
-        `BiMark: collect ${doc.escaped.length} escaped refs from ${uri}`
-      );
+      console.log(`collect ${doc.refs.length} refs from ${uri}}`);
+      console.log(`collect ${doc.escaped.length} escaped refs from ${uri}`);
 
       return doc;
     },
