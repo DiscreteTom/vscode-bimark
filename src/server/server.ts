@@ -42,9 +42,6 @@ init().then(({ bm, scan, infoMap }) => {
       },
     };
   });
-  connection.onDidOpenTextDocument((params) => {
-    scan(params.textDocument.uri, params.textDocument.text);
-  });
   connection.onHover((params) => {
     const doc = infoMap.get(params.textDocument.uri);
     if (!doc) return;
