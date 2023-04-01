@@ -31,6 +31,7 @@ init().then(({ bm, scan, infoMap }) => {
             delta: false,
           },
         },
+        definitionProvider: true,
       },
     };
   });
@@ -238,6 +239,33 @@ init().then(({ bm, scan, infoMap }) => {
     // console.log(result.data);
 
     return result;
+  });
+  connection.onDefinition((params) => {
+    const doc = infoMap.get(params.textDocument.uri)!;
+    if (!doc) return;
+
+    // check if the hover text is a ref
+    for (const ref of doc.refs) {
+      if (
+        ref.fragment.position.start.line - 1 == params.position.line &&
+        ref.fragment.position.start.column - 1 < params.position.character &&
+        ref.fragment.position.end.column - 1 > params.position.character
+      ) {
+        return {
+          uri: ref.def.path,
+          range: {
+            start: {
+              line: ref.def.fragment.position.start.line - 1,
+              character: ref.def.fragment.position.start.column - 1,
+            },
+            end: {
+              line: ref.def.fragment.position.end.line - 1,
+              character: ref.def.fragment.position.end.column,
+            },
+          },
+        };
+      }
+    }
   });
 
   const documents: TextDocuments<TextDocument> = new TextDocuments(
