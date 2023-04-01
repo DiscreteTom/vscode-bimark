@@ -44,7 +44,7 @@ export async function init() {
       doc.escaped = res.escaped.map((r) => r.ref);
 
       // debug output
-      console.log(`collect ${doc.refs.length} refs from ${uri}}`);
+      console.log(`collect ${doc.refs.length} refs from ${uri}`);
       console.log(`collect ${doc.escaped.length} escaped refs from ${uri}`);
 
       return doc;
