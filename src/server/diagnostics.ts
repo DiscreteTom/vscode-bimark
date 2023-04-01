@@ -84,5 +84,13 @@ export function scanWithDiagnostics<_>(
         });
       }
     }
+
+    return;
   }
+
+  // clear
+  connection.sendDiagnostics({
+    uri,
+    diagnostics: [],
+  });
 }
