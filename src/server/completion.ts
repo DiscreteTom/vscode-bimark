@@ -60,6 +60,17 @@ export function registerCompletion<_>(
         });
       }
       result.push({
+        label: `[[@${name}]]`,
+        kind: CompletionItemKind.Reference,
+        documentation,
+        detail: "explicit reference",
+        labelDetails: {
+          description: def.name,
+        },
+        sortText: `${name}-2`,
+        filterText: name,
+      });
+      result.push({
         label: `[[!${name}]]`,
         kind: CompletionItemKind.Constant,
         documentation,
@@ -67,7 +78,7 @@ export function registerCompletion<_>(
         labelDetails: {
           description: def.name,
         },
-        sortText: `${name}-2`,
+        sortText: `${name}-3`,
         filterText: name,
       });
     }
