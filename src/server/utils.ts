@@ -46,3 +46,7 @@ export function position2range(position: BMPosition) {
 export function fragment2range(fragment: Fragment) {
   return position2range(fragment.position);
 }
+
+export function buildMarkupContent(content: string[][]) {
+  return content.map((l) => l.join("\n")).join("\n\n---\n\n"); // separator
+}

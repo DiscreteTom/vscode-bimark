@@ -1,6 +1,11 @@
 import { _Connection } from "vscode-languageserver/node";
 import { DocInfo } from "./bimark";
-import { def2info, fragment2range, positionInFragment } from "./utils";
+import {
+  buildMarkupContent,
+  def2info,
+  fragment2range,
+  positionInFragment,
+} from "./utils";
 
 export function registerHover<_>(
   connection: _Connection<_, _, _, _, _, _, _, _>,
@@ -16,9 +21,10 @@ export function registerHover<_>(
         return {
           contents: {
             kind: "markdown",
-            value: ["```ts", `// BiMark Definition`, def2info(def), "```"].join(
-              "\n"
-            ),
+            value: buildMarkupContent([
+              ["```ts", def2info(def), "```"],
+              ["BiMark definition."],
+            ]),
           },
           range: fragment2range(def.fragment),
         };
@@ -31,12 +37,15 @@ export function registerHover<_>(
         return {
           contents: {
             kind: "markdown",
-            value: [
-              "```ts",
-              `// BiMark ${ref.type} reference`,
-              def2info(ref.def),
-              "```",
-            ].join("\n"),
+            value: buildMarkupContent([
+              ["```ts", def2info(ref.def), "```"],
+              [
+                `BiMark ${
+                  ref.type == "implicit" ? "_implicit_" : "**explicit**"
+                } reference.`,
+              ],
+              ["_[ctrl+click]_ to jump to definition."],
+            ]),
           },
           range: fragment2range(ref.fragment),
         };
@@ -49,7 +58,7 @@ export function registerHover<_>(
         return {
           contents: {
             kind: "markdown",
-            value: `BiMark ${ref.type} reference`,
+            value: `BiMark escaped reference.`,
           },
           range: fragment2range(ref.fragment),
         };
