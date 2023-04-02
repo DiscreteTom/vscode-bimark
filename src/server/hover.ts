@@ -16,7 +16,9 @@ export function registerHover<_>(
         return {
           contents: {
             kind: "markdown",
-            value: "```ts\n" + `// BiMark Definition\n` + def2info(def) + "```",
+            value: ["```ts", `// BiMark Definition`, def2info(def), "```"].join(
+              "\n"
+            ),
           },
           range: fragment2range(def.fragment),
         };
@@ -29,11 +31,12 @@ export function registerHover<_>(
         return {
           contents: {
             kind: "markdown",
-            value:
-              "```ts\n" +
-              `// BiMark ${ref.type} reference\n` +
-              def2info(ref.def) +
+            value: [
+              "```ts",
+              `// BiMark ${ref.type} reference`,
+              def2info(ref.def),
               "```",
+            ].join("\n"),
           },
           range: fragment2range(ref.fragment),
         };

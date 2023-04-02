@@ -28,7 +28,9 @@ export function registerCompletion<_>(
       const def = bm.name2def.get(name)!;
       const documentation = {
         kind: "markdown" as const,
-        value: "```ts\n" + `// BiMark Definition\n` + def2info(def) + "```",
+        value: ["```ts", `// BiMark Definition`, def2info(def), "```"].join(
+          "\n"
+        ),
       };
       result.push({
         label: name,

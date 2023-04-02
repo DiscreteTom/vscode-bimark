@@ -22,12 +22,12 @@ export function fileUri2relative(uri: string) {
 }
 
 export function def2info(def: Definition) {
-  return (
-    `name = '${def.name}'\n` +
-    `alias = [${def.alias.map((a) => `'${a}'`).join(", ")}]\n` +
-    `id = '${def.id}'\n` +
-    `path = '${fileUri2relative(def.path)}'\n`
-  );
+  return [
+    `name = '${def.name}'`,
+    `alias = [${def.alias.map((a) => `'${a}'`).join(", ")}]`,
+    `id = '${def.id}'`,
+    `path = '${fileUri2relative(def.path)}'`,
+  ].join("\n");
 }
 
 export function position2range(position: BMPosition) {
