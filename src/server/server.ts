@@ -16,6 +16,7 @@ import { registerDefinition } from "./definition";
 import { registerReference } from "./reference";
 import { registerSemanticToken } from "./semanticToken";
 import { scanWithDiagnostics } from "./diagnostics";
+import { debounce } from "./utils";
 
 init().then(({ bm, scan, infoMap, BiDocError, BiParserError }) => {
   const connection = createConnection(ProposedFeatures.all);
@@ -99,17 +100,19 @@ init().then(({ bm, scan, infoMap, BiDocError, BiParserError }) => {
       BiParserError
     );
   });
-  documents.onDidChangeContent((change) => {
-    console.log(`change ${change.document.uri}`);
-    scanWithDiagnostics(
-      connection,
-      scan,
-      change.document.uri,
-      change.document.getText(),
-      bm,
-      BiDocError,
-      BiParserError
-    );
-  });
+  documents.onDidChangeContent(
+    debounce((change) => {
+      console.log(`change ${change.document.uri}`);
+      scanWithDiagnostics(
+        connection,
+        scan,
+        change.document.uri,
+        change.document.getText(),
+        bm,
+        BiDocError,
+        BiParserError
+      );
+    }, 200)
+  );
   connection.listen();
 });

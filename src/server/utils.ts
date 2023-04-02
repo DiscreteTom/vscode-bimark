@@ -50,3 +50,20 @@ export function fragment2range(fragment: Fragment) {
 export function buildMarkupContent(content: string[][]) {
   return content.map((l) => l.join("\n")).join("\n\n---\n\n"); // separator
 }
+
+export type DebouncedFunction<T extends (...args: any[]) => void> = (
+  ...args: Parameters<T>
+) => void;
+
+export function debounce<T extends (...args: any[]) => void>(
+  func: T,
+  delay: number
+): DebouncedFunction<T> {
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+  return function (this: any, ...args: Parameters<T>): void {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => {
+      func.apply(this, args);
+    }, delay) as any;
+  };
+}
