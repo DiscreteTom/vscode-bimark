@@ -8,7 +8,7 @@ import {
   _Connection,
 } from "vscode-languageserver/node";
 import { TextDocument } from "vscode-languageserver-textdocument";
-import { def2info } from "./utils";
+import { buildMarkupContent, def2info } from "./utils";
 
 export function registerCompletion<_>(
   connection: _Connection<_, _, _, _, _, _, _, _>,
@@ -28,9 +28,7 @@ export function registerCompletion<_>(
       const def = bm.name2def.get(name)!;
       const documentation = {
         kind: "markdown" as const,
-        value: ["```ts", `// BiMark Definition`, def2info(def), "```"].join(
-          "\n"
-        ),
+        value: buildMarkupContent([["```ts", def2info(def), "```"]]),
       };
       result.push({
         label: name,
