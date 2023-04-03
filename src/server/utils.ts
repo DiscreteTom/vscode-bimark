@@ -7,8 +7,8 @@ import { config } from "./config";
 export function positionInFragment(position: Position, fragment: Fragment) {
   return (
     fragment.position.start.line - 1 == position.line &&
-    fragment.position.start.column - 1 < position.character &&
-    fragment.position.end.column - 1 > position.character
+    fragment.position.start.column - 1 <= position.character &&
+    fragment.position.end.column - 1 >= position.character
   );
 }
 
