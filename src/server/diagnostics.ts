@@ -102,13 +102,13 @@ export function scanWithDiagnostics<_>(
         )
       ) {
         // def has been changed, re-scan all other
-        for (const [uri] of config.files) {
-          console.log(`cascade scan by diagnostics: ${uri}`);
-          if (uri != uri) {
+        for (const [otherFile] of config.files) {
+          if (otherFile != uri) {
+            console.log(`cascade scan by diagnostics: ${otherFile}`);
             scanWithDiagnostics(
               connection,
               scan,
-              uri,
+              otherFile,
               bm,
               infoMap,
               biDocError,
