@@ -4,15 +4,20 @@ import { BiMark, BiDocError, BiParserError } from "bimark";
 import { DiagnosticSeverity, _Connection } from "vscode-languageserver/node";
 import { DocInfo } from "./bimark";
 import { fileUri2relative, position2range } from "./utils";
+import { config } from "./config";
 
 export function scanWithDiagnostics<_>(
   connection: _Connection<_, _, _, _, _, _, _, _>,
   scan: (uri: string) => DocInfo,
   uri: string,
   bm: BiMark,
+  infoMap: ReadonlyMap<string, DocInfo>,
   biDocError: typeof BiDocError,
-  biParserError: typeof BiParserError
+  biParserError: typeof BiParserError,
+  cascade: boolean
 ) {
+  const defsBeforeScan = infoMap.get(uri)?.defs;
+
   try {
     scan(uri);
   } catch (e) {
@@ -85,9 +90,38 @@ export function scanWithDiagnostics<_>(
     }
 
     return;
+  } finally {
+    // check if def has been changed, no matter if error or not
+    if (cascade && defsBeforeScan) {
+      const defsAfterScan = infoMap.get(uri)!.defs;
+      // check equivalence
+      if (
+        defsBeforeScan.length != defsAfterScan.length ||
+        defsBeforeScan.some((d) =>
+          defsAfterScan.every((dd) => d.fragment.content != dd.fragment.content)
+        )
+      ) {
+        // def has been changed, re-scan all other
+        for (const [uri] of config.files) {
+          console.log(`cascade scan by diagnostics: ${uri}`);
+          if (uri != uri) {
+            scanWithDiagnostics(
+              connection,
+              scan,
+              uri,
+              bm,
+              infoMap,
+              biDocError,
+              biParserError,
+              false
+            );
+          }
+        }
+      }
+    }
   }
 
-  // clear
+  // clear diagnostics
   connection.sendDiagnostics({
     uri,
     diagnostics: [],

@@ -21,8 +21,17 @@ init().then(({ bm, scan: _scan, infoMap, BiDocError, BiParserError }) => {
   const documents: TextDocuments<TextDocument> = new TextDocuments(
     TextDocument
   );
-  const scan = (uri: string) => {
-    scanWithDiagnostics(connection, _scan, uri, bm, BiDocError, BiParserError);
+  const scan = (uri: string, cascade: boolean) => {
+    scanWithDiagnostics(
+      connection,
+      _scan,
+      uri,
+      bm,
+      infoMap,
+      BiDocError,
+      BiParserError,
+      cascade
+    );
   };
 
   connection.onInitialize((params: InitializeParams) => {
@@ -60,7 +69,8 @@ init().then(({ bm, scan: _scan, infoMap, BiDocError, BiParserError }) => {
     async (params: { files: string[]; folders: string[] }) => {
       console.log(`init ${params.files.length} files`);
       await loadAll(params.files);
-      scanAll(params.files, scan);
+      scanAll(params.files, (uri) => scan(uri, false)); // first scan to get all defs
+      scanAll(params.files, (uri) => scan(uri, false)); // second scan to get all refs
       config.workspaceFolders = params.folders;
       console.log(`init folders: ${config.workspaceFolders.join(", ")}`);
       console.log(`init done`);
@@ -71,13 +81,13 @@ init().then(({ bm, scan: _scan, infoMap, BiDocError, BiParserError }) => {
   documents.onDidOpen((event) => {
     console.log(`open ${event.document.uri}`);
     config.files.set(event.document.uri, event.document.getText());
-    scan(event.document.uri);
+    scan(event.document.uri, true);
   });
   documents.onDidChangeContent(
     debounce((change) => {
       console.log(`change ${change.document.uri}`);
       config.files.set(change.document.uri, change.document.getText());
-      scan(change.document.uri);
+      scan(change.document.uri, true);
     }, 200)
   );
   connection.listen();
