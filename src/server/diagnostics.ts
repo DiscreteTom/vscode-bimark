@@ -7,15 +7,14 @@ import { fileUri2relative, position2range } from "./utils";
 
 export function scanWithDiagnostics<_>(
   connection: _Connection<_, _, _, _, _, _, _, _>,
-  scan: (uri: string, document: string) => DocInfo,
+  scan: (uri: string) => DocInfo,
   uri: string,
-  document: string,
   bm: BiMark,
   biDocError: typeof BiDocError,
   biParserError: typeof BiParserError
 ) {
   try {
-    scan(uri, document);
+    scan(uri);
   } catch (e) {
     if (e instanceof biParserError) {
       if (e.type == "DEF_NOT_FOUND") {

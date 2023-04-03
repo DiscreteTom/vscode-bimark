@@ -3,6 +3,8 @@
 import { Definition, Fragment, Position as BMPosition } from "bimark";
 import { Position } from "vscode-languageserver/node";
 import { config } from "./config";
+import * as fs from "fs";
+import * as url from "url";
 
 export function positionInFragment(position: Position, fragment: Fragment) {
   return (
@@ -66,4 +68,32 @@ export function debounce<T extends (...args: any[]) => void>(
       func.apply(this, args);
     }, delay) as any;
   };
+}
+
+/**
+ * Load all files from disk in parallel and store them in the config.
+ */
+export async function loadAll(uris: string[]) {
+  await Promise.all(
+    uris.map((uri) => {
+      return new Promise<void>((resolve) => {
+        const filePath = url.fileURLToPath(uri);
+        fs.readFile(filePath, "utf8", (err, text) => {
+          if (err) {
+            console.error(`Error reading file ${filePath}: ${err}`);
+          } else {
+            config.files.set(uri, text);
+          }
+          resolve();
+        });
+      });
+    })
+  );
+}
+
+export function scanAll(
+  uris: string[],
+  scan: (uri: string, document: string) => void
+) {
+  uris.forEach((uri) => scan(uri, config.files.get(uri)!));
 }

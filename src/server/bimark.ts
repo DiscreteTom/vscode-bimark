@@ -1,6 +1,7 @@
 // https://github.com/microsoft/TypeScript/issues/49721#issuecomment-1319854183
 // @ts-expect-error
 import { EscapedReference, Reference, Definition } from "bimark";
+import { config } from "./config";
 
 export type DocInfo = {
   defs: Definition[];
@@ -19,11 +20,16 @@ export async function init() {
 
   return {
     bm,
+    /**
+     * `document uri -> { defs, refs, escaped }`
+     */
     infoMap: infoMap as ReadonlyMap<string, DocInfo>,
     BiDocError,
     BiParserError,
-    scan: (uri: string, document: string) => {
+    scan: (uri: string) => {
       bm.purge(uri); // remove old data
+
+      const document = config.files.get(uri)!;
 
       // ensure docMap has this uri
       if (!infoMap.has(uri))

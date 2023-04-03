@@ -7,8 +7,6 @@ import {
 } from "vscode-languageserver/node";
 import { TextDocument } from "vscode-languageserver-textdocument";
 import { init } from "./bimark";
-import * as fs from "fs";
-import * as url from "url";
 import { config } from "./config";
 import { registerHover } from "./hover";
 import { registerCompletion } from "./completion";
@@ -16,13 +14,16 @@ import { registerDefinition } from "./definition";
 import { registerReference } from "./reference";
 import { registerSemanticToken } from "./semanticToken";
 import { scanWithDiagnostics } from "./diagnostics";
-import { debounce } from "./utils";
+import { debounce, loadAll, scanAll } from "./utils";
 
-init().then(({ bm, scan, infoMap, BiDocError, BiParserError }) => {
+init().then(({ bm, scan: _scan, infoMap, BiDocError, BiParserError }) => {
   const connection = createConnection(ProposedFeatures.all);
   const documents: TextDocuments<TextDocument> = new TextDocuments(
     TextDocument
   );
+  const scan = (uri: string) => {
+    scanWithDiagnostics(connection, _scan, uri, bm, BiDocError, BiParserError);
+  };
 
   connection.onInitialize((params: InitializeParams) => {
     return {
@@ -58,29 +59,8 @@ init().then(({ bm, scan, infoMap, BiDocError, BiParserError }) => {
     "bimark/init",
     async (params: { files: string[]; folders: string[] }) => {
       console.log(`init ${params.files.length} files`);
-      await Promise.all(
-        params.files.map((uri) => {
-          new Promise<void>((resolve) => {
-            const filePath = url.fileURLToPath(uri);
-            fs.readFile(filePath, "utf8", (err, data) => {
-              if (err) {
-                console.error(`Error reading file ${filePath}: ${err}`);
-              } else {
-                scanWithDiagnostics(
-                  connection,
-                  scan,
-                  uri,
-                  data,
-                  bm,
-                  BiDocError,
-                  BiParserError
-                );
-              }
-              resolve();
-            });
-          });
-        })
-      );
+      await loadAll(params.files);
+      scanAll(params.files, scan);
       config.workspaceFolders = params.folders;
       console.log(`init folders: ${config.workspaceFolders.join(", ")}`);
       console.log(`init done`);
@@ -90,28 +70,14 @@ init().then(({ bm, scan, infoMap, BiDocError, BiParserError }) => {
   documents.listen(connection);
   documents.onDidOpen((event) => {
     console.log(`open ${event.document.uri}`);
-    scanWithDiagnostics(
-      connection,
-      scan,
-      event.document.uri,
-      event.document.getText(),
-      bm,
-      BiDocError,
-      BiParserError
-    );
+    config.files.set(event.document.uri, event.document.getText());
+    scan(event.document.uri);
   });
   documents.onDidChangeContent(
     debounce((change) => {
       console.log(`change ${change.document.uri}`);
-      scanWithDiagnostics(
-        connection,
-        scan,
-        change.document.uri,
-        change.document.getText(),
-        bm,
-        BiDocError,
-        BiParserError
-      );
+      config.files.set(change.document.uri, change.document.getText());
+      scan(change.document.uri);
     }, 200)
   );
   connection.listen();
