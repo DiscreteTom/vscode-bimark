@@ -27,15 +27,13 @@ export async function init() {
     BiDocError,
     BiParserError,
     scan: (uri: string) => {
-      bm.purge(uri); // remove old data
+      // remove old data
+      bm.purge(uri);
+      const doc: DocInfo = { defs: [], refs: [], escaped: [] };
+      infoMap.set(uri, doc);
 
       const document = config.files.get(uri)!;
 
-      // ensure docMap has this uri
-      if (!infoMap.has(uri))
-        infoMap.set(uri, { defs: [], refs: [], escaped: [] });
-
-      const doc = infoMap.get(uri)!;
       // re-collect defs
       doc.defs = bm.collectDefs(uri, document);
 
