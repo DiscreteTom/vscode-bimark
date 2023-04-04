@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## [Unreleased]
+## v0.1.0
 
 - Syntax highlighting for definitions and references.
 - Hover over a definition/reference to see definition details.
