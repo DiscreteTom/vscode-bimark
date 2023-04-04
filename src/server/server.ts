@@ -74,6 +74,12 @@ init().then(({ bm, scan: _scan, infoMap, BiDocError, BiParserError }) => {
       config.workspaceFolders = params.folders;
       console.log(`init folders: ${config.workspaceFolders.join(", ")}`);
       console.log(`init done`);
+      // re-highlight all files
+      params.files.forEach((uri) => {
+        connection.sendNotification("semanticTokens/full", {
+          textDocument: { uri },
+        });
+      });
     }
   );
 
