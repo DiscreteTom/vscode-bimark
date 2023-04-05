@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Next
+
+- Feat: match longest definitions first. See https://github.com/DiscreteTom/bimark/issues/3.
+
 ## v0.1.0
 
 - Syntax highlighting for definitions and references.
