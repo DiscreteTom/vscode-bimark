@@ -41,7 +41,6 @@ init().then(({ bm, scan: _scan, infoMap, BiDocError, BiParserError }) => {
         hoverProvider: true,
         completionProvider: {
           resolveProvider: false,
-          triggerCharacters: ["[", " ", "!", "#"],
         },
         semanticTokensProvider: {
           legend: {
