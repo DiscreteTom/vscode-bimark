@@ -1,12 +1,13 @@
 import * as path from "path";
 import { workspace, ExtensionContext } from "vscode";
-
 import {
   LanguageClient,
   LanguageClientOptions,
   ServerOptions,
   TransportKind,
 } from "vscode-languageclient/node";
+import { GitIgnore } from "cspell-gitignore";
+import * as url from "url";
 
 let client: LanguageClient;
 
@@ -40,10 +41,22 @@ export async function activate(context: ExtensionContext) {
   // this will also launch the server
   await client.start();
 
-  // send initial file list & workspace folders
-  const files = await workspace.findFiles("**/*.md");
+  // send initial file list & workspace folders, ignore files that are in .gitignore
+  /** file path string list. */
+  const allFiles = (await workspace.findFiles("**/*.md")).map((f) => f.fsPath);
+  const gitIgnore = new GitIgnore(
+    workspace.workspaceFolders?.map((f) => f.uri.fsPath) ?? []
+  );
+  /** uri string list */
+  const files = (await gitIgnore.filterOutIgnored(allFiles)).map((f) =>
+    url.pathToFileURL(f).toString()
+  );
+  console.log(
+    `init: filtered ${allFiles.length} files to ${files.length} files`
+  );
+
   await client.sendRequest("bimark/init", {
-    files: files.map((uri) => uri.toString()),
+    files,
     folders: workspace.workspaceFolders?.map((f) => f.uri.toString()) ?? [],
   });
 }

@@ -57,6 +57,7 @@
   },
   "dependencies": {
     "bimark": "^0.3.7",
+    "cspell-gitignore": "^6.31.1",
     "vscode-languageclient": "^8.1.0",
     "vscode-languageserver": "^8.1.0",
     "vscode-languageserver-textdocument": "^1.0.8"
