@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## Next
+## v0.2.0
 
 - Feat: match longest definitions first. See https://github.com/DiscreteTom/bimark/issues/3.
 - Feat: ignore files in `.gitignore`.
